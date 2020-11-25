@@ -1,0 +1,12 @@
+__pycache__/
+arrays/
+.idea/
+result/
+*.nii
+*.gz
+blend_quality.py
+flip.py
+geometry_distribution.py
+show_feature.py
+show_filter.py
+test_deep.py
