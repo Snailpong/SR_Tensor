@@ -102,7 +102,7 @@ def make_hr_yz(i1, result_image, im_LR, jS, h, iS):
 
 if __name__ == '__main__':
     C.argument_parse()
-    C.Q_TOTAL = 512
+    C.Q_TOTAL = 256
 
     current_hour = time.strftime('%m%d%H', time.localtime(time.time()))
     result_dir = './result/{}_{}x_{}/'.format(current_hour, C.R, C.Q_TOTAL)

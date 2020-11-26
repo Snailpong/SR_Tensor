@@ -41,7 +41,7 @@ def get_features(patchX, patchY, patchZ, weight):
     trace, fa, mode = get_lamda_u(l1, l2, l3)
 
     # return angle_p, angle_t, math.log(trace), fa, mode
-    return angle_p, angle_t, math.log(trace), fa, index1, sign
+    return angle_p, angle_t, math.log(trace), fa, mode, index1, sign
 
 
 @njit
@@ -175,7 +175,7 @@ def make_kmeans_model():
 
     MAX_POINTS = 15000000
     patchNumber = 0
-    point_space = np.zeros((MAX_POINTS, 4))
+    point_space = np.zeros((MAX_POINTS, 5))
 
     for file_idx, image in enumerate(file_list):
         print('\r', end='')
@@ -216,7 +216,7 @@ def load_kmeans_model():
 
 if __name__ == '__main__':
     C.argument_parse()
-    C.Q_TOTAL = 512
+    C.Q_TOTAL = 256
 
     Q = np.zeros((C.Q_TOTAL, C.FILTER_VOL+1, C.FILTER_VOL+1), dtype=np.float64)
     V = np.zeros((C.Q_TOTAL, C.FILTER_VOL+1), dtype=np.float64)
