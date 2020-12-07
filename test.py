@@ -86,11 +86,14 @@ def make_hr_yz(i1, result_image, im_LR, jS, h, iS):
             # print(iS[cnt][0])
             patch = np.transpose(patch, iS[cnt][0])
 
-            if iS[cnt][1][0] > 0 and iS[cnt][1][1] < 0:
+            if iS[cnt][1][0] < 0:
+                iS[cnt][1][1] *= -1
+                iS[cnt][1][2] *= -1
+            if iS[cnt][1][1] > 0 and iS[cnt][1][2] < 0:
                 patch = np.flip(patch, axis=2)
-            elif iS[cnt][1][0] < 0 and iS[cnt][1][1] > 0:
+            elif iS[cnt][1][1] < 0 and iS[cnt][1][2] > 0:
                 patch = np.flip(patch, axis=1)
-            elif iS[cnt][1][0] < 0 and iS[cnt][1][1] < 0:
+            elif iS[cnt][1][1] < 0 and iS[cnt][1][2] < 0:
                 patch = np.flip(patch, axis=0)
 
             patch1 = np.append(patch, 1).astype(np.float32)
@@ -102,7 +105,7 @@ def make_hr_yz(i1, result_image, im_LR, jS, h, iS):
 
 if __name__ == '__main__':
     C.argument_parse()
-    C.Q_TOTAL = 256
+    C.Q_TOTAL = 512
 
     current_hour = time.strftime('%m%d%H', time.localtime(time.time()))
     result_dir = './result/{}_{}x_{}/'.format(current_hour, C.R, C.Q_TOTAL)

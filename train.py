@@ -32,8 +32,8 @@ def get_features(patchX, patchY, patchZ, weight):
     v1 = v[:, 0]
     index1 = np.abs(v1).argsort()[::-1]
     v1 = v1[index1]
-    sign = np.sign(v1[1:])
-    v1[1:] = np.abs(v1[1:])
+    sign = np.sign(v1)
+    v1 = np.abs(v1)
 
     angle_p = math.atan2(v1[1], v1[0])
     angle_t = math.acos(v1[2] / (sqrt((v1[0]) ** 2 + v1[1] ** 2 + v1[2] ** 2) + 1e-16))
@@ -41,6 +41,7 @@ def get_features(patchX, patchY, patchZ, weight):
     trace, fa, mode = get_lamda_u(l1, l2, l3)
 
     # return angle_p, angle_t, math.log(trace), fa, mode
+    # return angle_p, angle_t, math.log(trace)/4, fa, mode/2, index1, sign
     return angle_p, angle_t, math.log(trace), fa, mode, index1, sign
 
 
@@ -139,11 +140,14 @@ def train_qv2(im_LR, im_HR, w, kmeans, Q, V, count):
             # print(iS[cnt])
             patch = np.transpose(patch, iS[cnt][0])
 
-            if iS[cnt][1][0] > 0 and iS[cnt][1][1] < 0:
+            if iS[cnt][1][0] < 0:
+                iS[cnt][1][1] *= -1
+                iS[cnt][1][2] *= -1
+            if iS[cnt][1][1] > 0 and iS[cnt][1][2] < 0:
                 patch = np.flip(patch, axis=2)
-            elif iS[cnt][1][0] < 0 and iS[cnt][1][1] > 0:
+            elif iS[cnt][1][1] < 0 and iS[cnt][1][2] > 0:
                 patch = np.flip(patch, axis=1)
-            elif iS[cnt][1][0] < 0 and iS[cnt][1][1] < 0:
+            elif iS[cnt][1][1] < 0 and iS[cnt][1][2] < 0:
                 patch = np.flip(patch, axis=0)
 
             # patch1 = patch.reshape(-1) 
@@ -216,7 +220,7 @@ def load_kmeans_model():
 
 if __name__ == '__main__':
     C.argument_parse()
-    C.Q_TOTAL = 256
+    C.Q_TOTAL = 512
 
     Q = np.zeros((C.Q_TOTAL, C.FILTER_VOL+1, C.FILTER_VOL+1), dtype=np.float64)
     V = np.zeros((C.Q_TOTAL, C.FILTER_VOL+1), dtype=np.float64)
