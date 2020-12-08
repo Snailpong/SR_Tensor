@@ -1,6 +1,14 @@
 import numpy as np
 import os
 import pickle
+import nibabel as nib
+
+from crop_black import *
+from filter_func import *
+from get_lr import *
+from hashtable import *
+from matrix_compute import *
+from util import *
 
 import filter_constant as C
 
@@ -14,6 +22,19 @@ def make_dataset(dir):
                 path = os.path.join(root, fname)
                 images.append(path)
     return images
+
+
+def get_train_data(file):
+    raw_image = np.array(nib.load(file).get_fdata(), dtype=np.float32)
+    clipped_image = clip_image(raw_image)
+    im = mod_crop(clipped_image, C.R)
+    slice_area = crop_slice(im, C.PATCH_HALF, C.R)
+
+    im_blank_LR = get_lr(im) / im.max()
+    im_LR = im_blank_LR[slice_area]
+    im_HR = im[slice_area] / im.max()
+
+    return im_HR, im_LR
 
 
 def ask_save_qv(Q, V, finished_files):

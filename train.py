@@ -60,13 +60,7 @@ def make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, w, point_space, MA
                 if im_LR[i1, j1, k1] == 0:
                     continue
 
-                idxg = (slice(i1 - C.GRADIENT_HALF, i1 + C.GRADIENT_HALF + 1),
-                        slice(j1 - C.GRADIENT_HALF, j1 + C.GRADIENT_HALF + 1),
-                        slice(k1 - C.GRADIENT_HALF, k1 + C.GRADIENT_HALF + 1))
-
-                patchX = im_GX[idxg]
-                patchY = im_GY[idxg]
-                patchZ = im_GZ[idxg]
+                patchX, patchY, patchZ = get_gxyz(im_GX, im_GY, im_GZ, i1, j1, k1)
 
                 point_space[patchNumber] = np.array(get_features(patchX, patchY, patchZ, w)[:-2])
                 patchNumber += 1
@@ -106,14 +100,7 @@ def train_qv2(im_LR, im_HR, w, kmeans, Q, V, count):
             if im_HR[i1, j1, k1] == 0:
                 continue
 
-            idxg = (slice(i1 - C.GRADIENT_HALF, i1 + C.GRADIENT_HALF + 1),
-                    slice(j1 - C.GRADIENT_HALF, j1 + C.GRADIENT_HALF + 1),
-                    slice(k1 - C.GRADIENT_HALF, k1 + C.GRADIENT_HALF + 1))
-
-            patchX = im_GX[idxg]
-            patchY = im_GY[idxg]
-            patchZ = im_GZ[idxg]
-
+            patchX, patchY, patchZ = get_gxyz(im_GX, im_GY, im_GZ, i1, j1, k1)
             features = get_features(patchX, patchY, patchZ, w)
             fS.append(features[:-2])
             iS.append(features[-2:])
@@ -132,12 +119,7 @@ def train_qv2(im_LR, im_HR, w, kmeans, Q, V, count):
             if im_HR[i1, j1, k1] == 0:
                 continue
 
-            idxp = (slice(i1 - C.PATCH_HALF, i1 + C.PATCH_HALF + 1),
-                    slice(j1 - C.PATCH_HALF, j1 + C.PATCH_HALF + 1),
-                    slice(k1 - C.PATCH_HALF, k1 + C.PATCH_HALF + 1))
-
-            patch = im_LR[idxp]
-            # print(iS[cnt])
+            patch = get_patch(im_LR, i1, j1, k1)
             patch = np.transpose(patch, iS[cnt][0])
 
             if iS[cnt][1][0] < 0:
@@ -150,8 +132,7 @@ def train_qv2(im_LR, im_HR, w, kmeans, Q, V, count):
             elif iS[cnt][1][1] < 0 and iS[cnt][1][2] < 0:
                 patch = np.flip(patch, axis=0)
 
-            # patch1 = patch.reshape(-1) 
-            patch1 = np.append(patch, 1)
+            patch1 = append_func(patch)
             x1 = im_HR[i1, j1, k1]
 
             patchS[jS[cnt]].append(patch1)
@@ -186,15 +167,7 @@ def make_kmeans_model():
         print('' * 60, end='')
         print('\r Making Point Space: '+ image.split('\\')[-1] + str(MAX_POINTS) + ' patches (' + str(100*patchNumber/MAX_POINTS) + '%)')
 
-        raw_image = np.array(nib.load(image).get_fdata(), dtype=np.float32)
-        clipped_image = clip_image(raw_image)
-        im = mod_crop(clipped_image, C.R)
-
-        slice_area = crop_slice(im, C.PATCH_SIZE // 2, C.R)
-        im_LR = get_lr(im)
-
-        im_blank_LR = get_lr(im) / im.max()
-        im_LR = im_blank_LR[slice_area]
+        im_HR, im_LR = get_train_data(file)
         im_GX, im_GY, im_GZ = np.gradient(im_LR)
 
         point_space, patchNumber = make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, G_WEIGHT, point_space, MAX_POINTS)
@@ -227,7 +200,7 @@ if __name__ == '__main__':
     finished_files = []
     count = np.zeros(C.Q_TOTAL, dtype=int)
 
-    file_list = make_dataset('../NISR/train')
+    file_list = make_dataset(C.TRAIN_DIR)
     C.TRAIN_FILE_MAX = min(C.TRAIN_FILE_MAX, len(file_list))
 
     # Preprocessing normalized Gaussian matrix W for hashkey calculation
@@ -250,30 +223,11 @@ if __name__ == '__main__':
 
         print('\rProcessing ' + str(file_idx + 1) + '/' + str(len(file_list)) + ' image (' + file_name + ')')
 
-        raw_image = np.array(nib.load(file).get_fdata(), dtype=np.float32)
-        clipped_image = clip_image(raw_image)
-        im = mod_crop(clipped_image, C.R)
-        slice_area = crop_slice(im, C.PATCH_HALF, C.R)
-
-        im_blank_LR = get_lr(im) / im.max()
-        im_LR = im_blank_LR[slice_area]
-        im_HR = im[slice_area] / im.max()
-
+        im_HR, im_LR = get_train_data(file)
         Q, V, count = train_qv2(im_LR, im_HR, G_WEIGHT, kmeans, Q, V, count)
         
         print(' ' * 5, 'last', '%.1f' % ((time.time() - filestart) / 60), 'min', end='', flush=True)
 
         finished_files.append(file)
 
-    # compute_h(Q, V)
-
-    h = np.zeros((Q.shape[0], Q.shape[1]))
-
-    print("\rComputing H...   ")
-    start = time.time()
-    for j in range(C.Q_TOTAL):
-        print('\r{} / {}'.format(j + 1, C.Q_TOTAL), end='')
-        h[j] = cg(Q[j], V[j], tol=1e-5)[0]
-
-    h = np.array(h, dtype=np.float32)
-    np.save('./arrays/h_{}x_{}'.format(C.R, C.Q_TOTAL), h)
+    compute_h(Q, V)

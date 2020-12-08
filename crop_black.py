@@ -2,7 +2,6 @@ import numpy as np
 import random
 
 import filter_constant as C
-from util import *
 
 def mod_crop(im, modulo):
     H, W, D = im.shape
@@ -14,12 +13,14 @@ def mod_crop(im, modulo):
 
     return out
 
+
 def get_point_list_pixel_type(array):
     sampled_list = [[] for j in range(C.PIXEL_TYPE)]
     for xP, yP, zP in array:
         t = xP % C.R * (C.R ** 2) + yP % C.R * C.R + zP % C.R
         sampled_list[t].append([xP, yP, zP])
     return sampled_list
+
 
 def get_sampled_point_list(array):
     [x_range, y_range, z_range] = crop_slice(array)
@@ -30,6 +31,7 @@ def get_sampled_point_list(array):
     #split_range = list(chunks(sample_range, len(sample_range) // TRAIN_STP - 1))
 
     return sampled_list
+
 
 def crop_slice(array, padding, factor):
     for i in range(padding, array.shape[0] - padding):

@@ -1,7 +1,7 @@
 import numpy as np
 
-TRAIN_GLOB = './train/*.nii.gz'
-TEST_GLOB = "./test/*.nii.gz"
+TRAIN_DIR = '../NISR/train'
+TEST_DIR = "../NISR/test"
 RESULT_DIR = "./result/"
 
 Q_ANGLE_T = 8

@@ -112,7 +112,7 @@ if __name__ == '__main__':
     if not os.path.isdir(result_dir):
         os.mkdir(result_dir)
 
-    file_list = make_dataset('../NISR/test')
+    file_list = make_dataset(C.TEST_DIR)
 
     # Preprocessing normalized Gaussian matrix W for hashkey calculation
     G_WEIGHT = get_normalized_gaussian()
