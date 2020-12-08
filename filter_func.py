@@ -155,7 +155,6 @@ def gaussian_3d(shape=(3,3,3), sigma=0.85):
 
 
 def get_normalized_gaussian():
-    weight = gaussian_3d((C.GRADIENT_SIZE, C.GRADIENT_SIZE, C.GRADIENT_SIZE))
-    weight = np.diag(weight.ravel())
-    weight = np.array(weight, dtype=np.float32)
+    weight = gaussian_3d((C.GRADIENT_SIZE, C.GRADIENT_SIZE, C.GRADIENT_SIZE)).ravel()
+    weight = np.vstack((weight, weight, weight)).T.astype('float32')
     return weight

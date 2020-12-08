@@ -22,7 +22,7 @@ from util import *
 @njit
 def get_features(patchX, patchY, patchZ, weight):
     G = np.vstack((patchX.ravel(), patchY.ravel(), patchZ.ravel())).T
-    x = G.T @ weight @ G
+    x = G.T @ (weight * G)
     w, v = np.linalg.eig(x)
 
     index = w.argsort()[::-1]
