@@ -17,6 +17,7 @@ from get_lr import *
 from hashtable import *
 from matrix_compute import *
 from train import load_kmeans_model, get_features
+from util import *
 
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 
@@ -34,7 +35,11 @@ def make_image(im_LR, im_GX, im_GY, im_GZ, w, kmeans, h):
         if len(fS) == 0:
             continue
 
-        jS = kmeans.predict(fS)
+        fS = np.array(fS)
+        jS_a = kmeans[0].predict(fS[:, :2])
+        jS_t = kmeans[1].predict(fS[:, 2:])
+        jS = jS_a + jS_t * 6
+
         result_image = make_hr_yz(i1, result_image, im_LR, jS, h, iS)
 
     result_image = np.clip(result_image, 0, 1)
@@ -105,7 +110,7 @@ def make_hr_yz(i1, result_image, im_LR, jS, h, iS):
 
 if __name__ == '__main__':
     C.argument_parse()
-    C.Q_TOTAL = 512
+    C.Q_TOTAL = 510
 
     current_hour = time.strftime('%m%d%H', time.localtime(time.time()))
     result_dir = './result/{}_{}x_{}/'.format(current_hour, C.R, C.Q_TOTAL)

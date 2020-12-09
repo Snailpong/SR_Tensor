@@ -72,10 +72,14 @@ def make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, w, point_space, MA
 
 def k_means_modeling(point_space, patchNumber, n_clusters):
     quantization = point_space[0:patchNumber, :]
-    kmeans = KMeans(n_clusters=n_clusters, verbose=True, max_iter=30, n_init=1)
-    kmeans.fit(quantization)
 
-    return kmeans
+    kmeans_angle = KMeans(n_clusters=6, verbose=True, max_iter=30, n_init=1)
+    kmeans_angle.fit(quantization[:, :2])
+
+    kmeans_tensor = KMeans(n_clusters=n_clusters//6, verbose=True, max_iter=30, n_init=1)
+    kmeans_tensor.fit(quantization[:, 2:])
+
+    return kmeans_angle, kmeans_tensor
 
 
 def train_qv2(im_LR, im_HR, w, kmeans, Q, V, count):
@@ -107,8 +111,10 @@ def train_qv2(im_LR, im_HR, w, kmeans, Q, V, count):
 
         print('   get_feature {} s'.format(((time.time() - timer) * 1000 // 10) / 100), end='', flush=True)
         timer = time.time()
-
-        jS = kmeans.predict(fS)
+        fS = np.array(fS)
+        jS_a = kmeans[0].predict(fS[:, :2])
+        jS_t = kmeans[1].predict(fS[:, 2:])
+        jS = jS_a + jS_t * 6
         cnt = 0
 
         print('   predict {} s'.format(((time.time() - timer) * 1000 // 10) / 100), end='', flush=True)
@@ -162,10 +168,10 @@ def make_kmeans_model():
     patchNumber = 0
     point_space = np.zeros((MAX_POINTS, 5))
 
-    for file_idx, image in enumerate(file_list):
+    for file_idx, file in enumerate(file_list):
         print('\r', end='')
         print('' * 60, end='')
-        print('\r Making Point Space: '+ image.split('\\')[-1] + str(MAX_POINTS) + ' patches (' + str(100*patchNumber/MAX_POINTS) + '%)')
+        print('\r Making Point Space: '+ file.split('\\')[-1] + str(MAX_POINTS) + ' patches (' + str(100*patchNumber/MAX_POINTS) + '%)')
 
         im_HR, im_LR = get_train_data(file)
         im_GX, im_GY, im_GZ = np.gradient(im_LR)
@@ -193,7 +199,7 @@ def load_kmeans_model():
 
 if __name__ == '__main__':
     C.argument_parse()
-    C.Q_TOTAL = 512
+    C.Q_TOTAL = 510
 
     Q = np.zeros((C.Q_TOTAL, C.FILTER_VOL+1, C.FILTER_VOL+1), dtype=np.float64)
     V = np.zeros((C.Q_TOTAL, C.FILTER_VOL+1), dtype=np.float64)
@@ -229,5 +235,6 @@ if __name__ == '__main__':
         print(' ' * 5, 'last', '%.1f' % ((time.time() - filestart) / 60), 'min', end='', flush=True)
 
         finished_files.append(file)
-
+        
+    print(count)
     compute_h(Q, V)
