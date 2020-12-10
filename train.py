@@ -70,13 +70,13 @@ def make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, w, point_space, MA
     return point_space, patchNumber
 
 
-def k_means_modeling(point_space, patchNumber, n_clusters):
+def k_means_modeling(point_space, patchNumber):
     quantization = point_space[0:patchNumber, :]
 
-    kmeans_angle = KMeans(n_clusters=6, verbose=True, max_iter=30, n_init=1)
+    kmeans_angle = KMeans(n_clusters=C.Q_ANGLE, verbose=True, max_iter=30, n_init=1)
     kmeans_angle.fit(quantization[:, :2])
 
-    kmeans_tensor = KMeans(n_clusters=n_clusters//6, verbose=True, max_iter=30, n_init=1)
+    kmeans_tensor = KMeans(n_clusters=C.Q_TENSOR, verbose=True, max_iter=30, n_init=1)
     kmeans_tensor.fit(quantization[:, 2:])
 
     return kmeans_angle, kmeans_tensor
@@ -114,7 +114,7 @@ def train_qv2(im_LR, im_HR, w, kmeans, Q, V, count):
         fS = np.array(fS)
         jS_a = kmeans[0].predict(fS[:, :2])
         jS_t = kmeans[1].predict(fS[:, 2:])
-        jS = jS_a + jS_t * 6
+        jS = jS_a + jS_t * C.Q_ANGLE
         cnt = 0
 
         print('   predict {} s'.format(((time.time() - timer) * 1000 // 10) / 100), end='', flush=True)
@@ -173,7 +173,7 @@ def make_kmeans_model():
         print('' * 60, end='')
         print('\r Making Point Space: '+ file.split('\\')[-1] + str(MAX_POINTS) + ' patches (' + str(100*patchNumber/MAX_POINTS) + '%)')
 
-        im_HR, im_LR = get_train_data(file)
+        im_HR, im_LR = get_array_data(file)
         im_GX, im_GY, im_GZ = np.gradient(im_LR)
 
         point_space, patchNumber = make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, G_WEIGHT, point_space, MAX_POINTS)
@@ -182,7 +182,7 @@ def make_kmeans_model():
 
     start = time.time()
     print('start clustering')
-    kmeans = k_means_modeling(point_space, patchNumber, C.Q_TOTAL)
+    kmeans = k_means_modeling(point_space, patchNumber)
     print(time.time() - start)
 
     with open('./arrays/space_{}x_{}.km'.format(C.R, C.Q_TOTAL), 'wb') as p:
@@ -199,7 +199,6 @@ def load_kmeans_model():
 
 if __name__ == '__main__':
     C.argument_parse()
-    C.Q_TOTAL = 510
 
     Q = np.zeros((C.Q_TOTAL, C.FILTER_VOL+1, C.FILTER_VOL+1), dtype=np.float64)
     V = np.zeros((C.Q_TOTAL, C.FILTER_VOL+1), dtype=np.float64)
@@ -229,7 +228,7 @@ if __name__ == '__main__':
 
         print('\rProcessing ' + str(file_idx + 1) + '/' + str(len(file_list)) + ' image (' + file_name + ')')
 
-        im_HR, im_LR = get_train_data(file)
+        im_HR, im_LR = get_array_data(file, training=True)
         Q, V, count = train_qv2(im_LR, im_HR, G_WEIGHT, kmeans, Q, V, count)
         
         print(' ' * 5, 'last', '%.1f' % ((time.time() - filestart) / 60), 'min', end='', flush=True)

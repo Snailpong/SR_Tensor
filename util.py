@@ -24,7 +24,7 @@ def make_dataset(dir):
     return images
 
 
-def get_train_data(file):
+def get_array_data(file, training):
     raw_image = np.array(nib.load(file).get_fdata(), dtype=np.float32)
     clipped_image = clip_image(raw_image)
     im = mod_crop(clipped_image, C.R)
@@ -34,7 +34,10 @@ def get_train_data(file):
     im_LR = im_blank_LR[slice_area]
     im_HR = im[slice_area] / im.max()
 
-    return im_HR, im_LR
+    if training:
+        return im_HR, im_LR
+    else:
+        return im_HR, im_LR, raw_image.shape, im.max(), slice_area
 
 
 def ask_save_qv(Q, V, finished_files):
