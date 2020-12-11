@@ -71,8 +71,7 @@ def make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, w, point_space, MA
     return point_space, patchNumber
 
 
-def k_means_modeling(point_space, patchNumber):
-    # quantization = point_space[0:patchNumber, :]
+def k_means_modeling(quantization):
 
     with open('./arrays/qua', 'rb') as p:
         quantization = pickle.load(p)
@@ -185,9 +184,11 @@ def make_kmeans_model():
     #     if patchNumber > MAX_POINTS / 2:
     #         break
 
+    quantization = point_space[0:patchNumber, :]
+
     # start = time.time()
     print('start clustering')
-    kmeans = k_means_modeling(point_space, patchNumber)
+    kmeans = k_means_modeling(quantization)
     print(time.time() - start)
 
     with open('./arrays/space_{}x_{}.km'.format(C.R, C.Q_TOTAL), 'wb') as p:
