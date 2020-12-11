@@ -17,6 +17,7 @@ from get_lr import *
 from hashtable import *
 from matrix_compute import *
 from util import *
+from kmeans_vector import KMeans_Vector
 
 
 @njit
@@ -42,7 +43,7 @@ def get_features(patchX, patchY, patchZ, weight):
 
     # return angle_p, angle_t, math.log(trace), fa, mode
     # return angle_p, angle_t, math.log(trace)/4, fa, mode/2, index1, sign
-    return angle_p, angle_t, math.log(trace), fa, mode, index1, sign
+    return v1[0], v1[1], v1[2], math.log(trace), fa, mode, index1, sign
 
 
 @njit
@@ -71,13 +72,16 @@ def make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, w, point_space, MA
 
 
 def k_means_modeling(point_space, patchNumber):
-    quantization = point_space[0:patchNumber, :]
+    # quantization = point_space[0:patchNumber, :]
 
-    kmeans_angle = KMeans(n_clusters=C.Q_ANGLE, verbose=True, max_iter=30, n_init=1)
-    kmeans_angle.fit(quantization[:, :2])
+    with open('./arrays/qua', 'rb') as p:
+        quantization = pickle.load(p)
+
+    kmeans_angle = KMeans_Vector(n_clusters=C.Q_ANGLE, verbose=True, max_iter=30, n_init=1)
+    kmeans_angle.fit(quantization[:, :3])
 
     kmeans_tensor = KMeans(n_clusters=C.Q_TENSOR, verbose=True, max_iter=30, n_init=1)
-    kmeans_tensor.fit(quantization[:, 2:])
+    kmeans_tensor.fit(quantization[:, 3:])
 
     return kmeans_angle, kmeans_tensor
 
@@ -138,7 +142,8 @@ def train_qv2(im_LR, im_HR, w, kmeans, Q, V, count):
             elif iS[cnt][1][1] < 0 and iS[cnt][1][2] < 0:
                 patch = np.flip(patch, axis=0)
 
-            patch1 = append_func(patch)
+            # patch1 = append_func(patch)
+            patch1 = np.append(patch, 1)
             x1 = im_HR[i1, j1, k1]
 
             patchS[jS[cnt]].append(patch1)
@@ -166,21 +171,21 @@ def make_kmeans_model():
 
     MAX_POINTS = 15000000
     patchNumber = 0
-    point_space = np.zeros((MAX_POINTS, 5))
+    point_space = np.zeros((MAX_POINTS, 6))
 
-    for file_idx, file in enumerate(file_list):
-        print('\r', end='')
-        print('' * 60, end='')
-        print('\r Making Point Space: '+ file.split('\\')[-1] + str(MAX_POINTS) + ' patches (' + str(100*patchNumber/MAX_POINTS) + '%)')
+    # for file_idx, file in enumerate(file_list):
+    #     print('\r', end='')
+    #     print('' * 60, end='')
+    #     print('\r Making Point Space: '+ file.split('\\')[-1] + str(MAX_POINTS) + ' patches (' + str(100*patchNumber/MAX_POINTS) + '%)')
 
-        im_HR, im_LR = get_array_data(file)
-        im_GX, im_GY, im_GZ = np.gradient(im_LR)
+    #     im_HR, im_LR = get_array_data(file, training=True)
+    #     im_GX, im_GY, im_GZ = np.gradient(im_LR)
 
-        point_space, patchNumber = make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, G_WEIGHT, point_space, MAX_POINTS)
-        if patchNumber > MAX_POINTS / 2:
-            break
+    #     point_space, patchNumber = make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, G_WEIGHT, point_space, MAX_POINTS)
+    #     if patchNumber > MAX_POINTS / 2:
+    #         break
 
-    start = time.time()
+    # start = time.time()
     print('start clustering')
     kmeans = k_means_modeling(point_space, patchNumber)
     print(time.time() - start)
