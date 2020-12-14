@@ -64,6 +64,12 @@ def make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, w, point_space, MA
     return point_space, patchNumber
 
 
+def init_buckets(Q_TOTAL):
+    patchS = [[] for j in range(C.Q_TOTAL)]
+    xS = [[] for j in range(C.Q_TOTAL)]
+    return patchS, xS
+
+
 def k_means_modeling(quantization):
 
     with open('./arrays/qua', 'rb') as p:

@@ -4,30 +4,24 @@ import math
 
 import cupy as cp
 import numpy as np
-
 import nibabel as nib
 from sklearn.cluster import KMeans
 
 import filter_constant as C
 
 from crop_black import *
-from filter_func import *
-from get_lr import *
-from matrix_compute import *
-from util import *
-from kmeans_vector import KMeans_Vector
 from feature_model import *
+from filter_func import *
+from kmeans_vector import KMeans_Vector
+from matrix_compute import *
+from preprocessing import *
+from util import *
 
 
 def train_qv(im_LR, im_HR, w, kmeans, Q, V, count):
-    H, W, D = im_HR.shape
-    im_GX, im_GY, im_GZ = np.gradient(im_LR)  # Calculate the gradient images
+    im_GX, im_GY, im_GZ = np.gradient(im_LR)
 
-    xyz_range = [[x, y, z] for x in range(C.PATCH_HALF, H - C.PATCH_HALF)
-                    for y in range(C.PATCH_HALF, W - C.PATCH_HALF)
-                    for z in range(C.PATCH_HALF, D - C.PATCH_HALF)]
-    sample_range = random.sample(xyz_range, len(xyz_range) // C.SAMPLE_RATE)
-    point_list = chunk(sample_range, len(sample_range) // C.TRAIN_DIV + 1)
+    point_list = sample_points(im_HR.shape)
 
     for sample_idx, point_list1 in enumerate(point_list):
         print('\r{} / {}'.format(sample_idx + 1, len(point_list)), end='', flush=True)
@@ -110,7 +104,6 @@ if __name__ == '__main__':
     file_list = make_dataset(C.TRAIN_DIR)
     C.TRAIN_FILE_MAX = min(C.TRAIN_FILE_MAX, len(file_list))
 
-    # Preprocessing normalized Gaussian matrix W for hashkey calculation
     G_WEIGHT = get_normalized_gaussian()
 
     # kmeans = make_kmeans_model()

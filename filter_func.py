@@ -34,16 +34,6 @@ def dog_sharpener(input, sigma=0.85, alpha=1.414, r=15, ksize=(3,3,3)):
     return output
 
 
-def add_weight(im1, w1, im2, w2, b):
-    return im1 * w1 + im2 * w2 + b
-
-
-def clip_image(im):
-    clip_value = np.sort(im.ravel())[int(np.prod(im.shape) * 0.999)]
-    im = np.clip(im, 0, clip_value)
-    return im
-
-
 @njit(parallel=True)
 def ct_descriptor(im):
     H, W, D = im.shape
