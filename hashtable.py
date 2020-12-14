@@ -42,16 +42,7 @@ def quantization_border(im_LR, im_GX, im_GY, im_GZ, patchNumber, w, quantization
                 patchNumber += 1
     return quantization, patchNumber
 
-@njit
-def get_lamda_u(l1, l2, l3):
-    l1 = sqrt(l1)
-    l2 = sqrt(l2)
-    l3 = sqrt(l3)
-    trace = l1 + l2 + l3
-    mean_la = trace / 3
-    fa = ((l1 - mean_la)**2 + (l2 - mean_la)**2 + (l3 - mean_la)**2)/ (l1**2 + l2**2 + l3**2)
-    mode = (-l1-l2+2*l3)*(2*l1-l2-l3)*(-l1+2*l2-l3)/2/pow(l1**2+l2**2+l3**2-l1*l2-l1*l3-l2*l3, 1.5)
-    return trace, fa, mode
+
 
 @njit
 def get_hash(patchX, patchY, patchZ, weight, b_trace, b_fa, b_mode):

@@ -2,7 +2,6 @@ import numpy as np
 import cupy as cp
 import math
 import time
-from scipy.sparse.linalg import cg
 
 from numba import njit
 
@@ -29,11 +28,6 @@ def get_gxyz(Lgx, Lgy, Lgz, xP, yP, zP):
              yP - C.GRADIENT_HALF: yP + (C.GRADIENT_HALF + 1),
              zP - C.GRADIENT_HALF: zP + (C.GRADIENT_HALF + 1)]
     return gx, gy, gz
-
-
-@njit
-def append_func(patch):
-    return np.append(patch, 1)
 
 
 def add_qv_jt(patchSa, xSa, Qa, Va, j, t):

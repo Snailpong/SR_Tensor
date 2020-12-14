@@ -14,10 +14,11 @@ from crop_black import *
 from filter_constant import *
 from filter_func import *
 from get_lr import *
-from hashtable import *
 from matrix_compute import *
 from train import load_kmeans_model, get_features
 from util import *
+from kmeans_vector import KMeans_Vector
+from feature_model import *
 
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 
@@ -36,8 +37,8 @@ def make_image(im_LR, im_GX, im_GY, im_GZ, w, kmeans, h):
             continue
 
         fS = np.array(fS)
-        jS_a = kmeans[0].predict(fS[:, :2])
-        jS_t = kmeans[1].predict(fS[:, 2:])
+        jS_a = kmeans[0].predict(fS[:, :-3])
+        jS_t = kmeans[1].predict(fS[:, -3:])
         jS = jS_a + jS_t * C.Q_ANGLE
 
         result_image = make_hr_yz(i1, result_image, im_LR, jS, h, iS)
@@ -109,7 +110,6 @@ if __name__ == '__main__':
 
     file_list = make_dataset(C.TEST_DIR)
 
-    # Preprocessing normalized Gaussian matrix W for hashkey calculation
     G_WEIGHT = get_normalized_gaussian()
 
     h = np.load('./arrays/h_{}x_{}.npy'.format(C.R, C.Q_TOTAL))

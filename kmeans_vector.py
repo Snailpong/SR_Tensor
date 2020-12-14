@@ -135,9 +135,6 @@ def kmeans_single_elkan_vector(X, sample_weight, n_clusters, max_iter=300,
 
         labels_old = labels.copy()
         centers = centers_new.copy()
-
-    print(centers)
-
         
     return labels, center_shift_tot, centers, i + 1
 

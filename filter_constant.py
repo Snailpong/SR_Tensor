@@ -4,8 +4,8 @@ TRAIN_DIR = '../NISR/train'
 TEST_DIR = "../NISR/test"
 RESULT_DIR = "./result/"
 
-Q_ANGLE = 4
-Q_TENSOR = 128
+Q_ANGLE = 3#4
+Q_TENSOR = 341#170#128
 
 PATCH_SIZE = 11
 PATCH_HALF = PATCH_SIZE // 2
