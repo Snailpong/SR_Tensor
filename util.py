@@ -3,10 +3,7 @@ import os
 import pickle
 import nibabel as nib
 
-from crop_black import *
 from filter_func import *
-from get_lr import *
-from hashtable import *
 from matrix_compute import *
 from util import *
 
@@ -22,14 +19,6 @@ def make_dataset(dir):
                 path = os.path.join(root, fname)
                 images.append(path)
     return images
-
-
-def ask_save_qv(Q, V, finished_files):
-    try:
-        a = input_timer("\r Enter to save >> ", 10)
-        save_qv(Q, V, finished_files)
-    except TimeoutError as e:
-        pass
 
 
 def save_qv(Q, V, finished_files, count):

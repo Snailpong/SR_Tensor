@@ -10,7 +10,6 @@ from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 
 import filter_constant as C
 
-from crop_black import *
 from feature_model import *
 from filter_func import *
 from kmeans_vector import KMeans_Vector
@@ -75,8 +74,6 @@ def make_hr_yz(i1, result_image, im_LR, jS, h, iS):
             if im_LR[i1, j1, k1] == 0:
                 continue
 
-            # patch1 = patch.ravel()
-            # print(iS[cnt][0])
             patch = np.transpose(patch, iS[cnt][0])
 
             if iS[cnt][1][0] < 0:
@@ -89,8 +86,7 @@ def make_hr_yz(i1, result_image, im_LR, jS, h, iS):
             elif iS[cnt][1][1] < 0 and iS[cnt][1][2] < 0:
                 patch = np.flip(patch, axis=0)
 
-            patch1 = np.append(patch, 1).astype(np.float32)
-            result_image[i1, j1, k1] = np.dot(patch1, h[jS[cnt]])
+            result_image[i1, j1, k1] = (patch * h_comb[jS[cnt]]).sum() + h_bias[jS[cnt]]
             cnt += 1
 
     return result_image
@@ -109,6 +105,8 @@ if __name__ == '__main__':
     G_WEIGHT = get_normalized_gaussian()
 
     h = np.load('./arrays/h_{}x_{}.npy'.format(C.R, C.Q_TOTAL))
+    h_comb = h[:, :-1].reshape(h.shape[0], C.PATCH_SIZE, C.PATCH_SIZE, C.PATCH_SIZE)
+    h_bias = h[:, -1]
     kmeans = load_kmeans_model()
 
     filestart = time.time()

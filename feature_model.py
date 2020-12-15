@@ -8,6 +8,7 @@ from sklearn.cluster import KMeans
 from matrix_compute import get_gxyz
 from filter_func import get_normalized_gaussian
 from kmeans_vector import KMeans_Vector
+from preprocessing import get_array_data
 
 import filter_constant as C
 
@@ -40,9 +41,8 @@ def get_features(patchX, patchY, patchZ, weight):
 
     trace, fa, mode = get_lamda_u(l1, l2, l3)
 
-    # return angle_p, angle_t, math.log(trace), fa, mode
-    # return angle_p, angle_t, math.log(trace)/4, fa, mode/2, index1, sign
-    return v1[0], v1[1], v1[2], math.log(trace), fa, mode, index1, sign
+    # return v1[0], v1[1], v1[2], math.log(trace), fa, mode, index1, sign
+    return v1[0], v1[1], v1[2], trace*2, fa, mode, index1, sign
 
 
 @njit
@@ -72,8 +72,8 @@ def init_buckets(Q_TOTAL):
 
 def k_means_modeling(quantization):
 
-    with open('./arrays/qua', 'rb') as p:
-        quantization = pickle.load(p)
+    # with open('./arrays/qua', 'rb') as p:
+    #     quantization = pickle.load(p)
 
     kmeans_angle = KMeans_Vector(n_clusters=C.Q_ANGLE, verbose=True, max_iter=30, n_init=1)
     kmeans_angle.fit(quantization[:, :3])
@@ -84,24 +84,24 @@ def k_means_modeling(quantization):
     return kmeans_angle, kmeans_tensor
 
 
-def make_kmeans_model():
+def make_kmeans_model(file_list):
     G_WEIGHT = get_normalized_gaussian()
 
     MAX_POINTS = 15000000
     patchNumber = 0
     point_space = np.zeros((MAX_POINTS, 6))
 
-    # for file_idx, file in enumerate(file_list):
-    #     print('\r', end='')
-    #     print('' * 60, end='')
-    #     print('\r Making Point Space: '+ file.split('\\')[-1] + str(MAX_POINTS) + ' patches (' + str(100*patchNumber/MAX_POINTS) + '%)')
+    for file_idx, file in enumerate(file_list):
+        print('\r', end='')
+        print('' * 60, end='')
+        print('\r Making Point Space: '+ file.split('\\')[-1] + str(MAX_POINTS) + ' patches (' + str(100*patchNumber/MAX_POINTS) + '%)')
 
-    #     im_HR, im_LR = get_array_data(file, training=True)
-    #     im_GX, im_GY, im_GZ = np.gradient(im_LR)
+        im_HR, im_LR = get_array_data(file, training=True)
+        im_GX, im_GY, im_GZ = np.gradient(im_LR)
 
-    #     point_space, patchNumber = make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, G_WEIGHT, point_space, MAX_POINTS)
-    #     if patchNumber > MAX_POINTS / 2:
-    #         break
+        point_space, patchNumber = make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, G_WEIGHT, point_space, MAX_POINTS)
+        if patchNumber > MAX_POINTS / 2:
+            break
 
     quantization = point_space[0:patchNumber, :]
 

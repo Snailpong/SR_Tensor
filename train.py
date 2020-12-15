@@ -9,7 +9,6 @@ from sklearn.cluster import KMeans
 
 import filter_constant as C
 
-from crop_black import *
 from feature_model import *
 from filter_func import *
 from kmeans_vector import KMeans_Vector
@@ -106,8 +105,8 @@ if __name__ == '__main__':
 
     G_WEIGHT = get_normalized_gaussian()
 
-    # kmeans = make_kmeans_model()
-    kmeans = load_kmeans_model()
+    kmeans = make_kmeans_model(file_list)
+    # kmeans = load_kmeans_model()
 
     start = time.time()
 
