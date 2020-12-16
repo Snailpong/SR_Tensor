@@ -42,7 +42,8 @@ def get_features(patchX, patchY, patchZ, weight):
     trace, fa, mode = get_lamda_u(l1, l2, l3)
 
     # return v1[0], v1[1], v1[2], math.log(trace), fa, mode, index1, sign
-    return v1[0], v1[1], v1[2], trace*2, fa, mode, index1, sign
+    # return v1[0], v1[1], v1[2], trace*2, fa, mode, index1, sign
+    return v1[0], v1[1], v1[2], math.sqrt(trace/0.053), math.sqrt(fa/0.071), math.sqrt((mode+1)/0.362), index1, sign
 
 
 @njit

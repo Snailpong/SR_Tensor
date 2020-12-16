@@ -9,4 +9,5 @@ flip.py
 geometry_distribution.py
 show_feature.py
 show_filter.py
+show_centroid.py
 quality_matrics.py
