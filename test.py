@@ -18,7 +18,7 @@ from preprocessing import *
 from util import *
 
 
-def make_image(im_LR, im_GX, im_GY, im_GZ, w, kmeans, h):
+def make_image(im_LR, im_GX, im_GY, im_GZ, w, kmeans, std, h):
     H = im_LR.shape[0]
     result_image = im_LR.copy()
 
@@ -43,7 +43,7 @@ def make_image(im_LR, im_GX, im_GY, im_GZ, w, kmeans, h):
     return result_image
 
 
-def get_feature_yz(i1, result_image, im_LR, im_GX, im_GY, im_GZ, w):
+def get_feature_yz(i1, result_image, im_LR, im_GX, im_GY, im_GZ, w, std):
     H, W, D = im_LR.shape
     fS = []
     iS = []
@@ -55,14 +55,14 @@ def get_feature_yz(i1, result_image, im_LR, im_GX, im_GY, im_GZ, w):
 
             patchX, patchY, patchZ = get_gxyz(im_GX, im_GY, im_GZ, i1, j1, k1)
 
-            features = get_features(patchX, patchY, patchZ, w)
+            features = get_features(patchX, patchY, patchZ, w, std)
             fS.append(features[:-2])
             iS.append(features[-2:])
 
     return fS, iS
 
 
-# @jit
+# @njit
 def make_hr_yz(i1, result_image, im_LR, jS, h, iS):
     H, W, D = im_LR.shape
     cnt = 0
@@ -81,10 +81,15 @@ def make_hr_yz(i1, result_image, im_LR, jS, h, iS):
                 iS[cnt][1][2] *= -1
             if iS[cnt][1][1] > 0 and iS[cnt][1][2] < 0:
                 patch = np.flip(patch, axis=2)
+                # flip_num = 1
             elif iS[cnt][1][1] < 0 and iS[cnt][1][2] > 0:
                 patch = np.flip(patch, axis=1)
+                # flip_num = 2
             elif iS[cnt][1][1] < 0 and iS[cnt][1][2] < 0:
                 patch = np.flip(patch, axis=0)
+                # flip_num = 3
+            else:
+                flip_num = 0
 
             result_image[i1, j1, k1] = (patch * h_comb[jS[cnt]]).sum() + h_bias[jS[cnt]]
             cnt += 1
@@ -106,8 +111,14 @@ if __name__ == '__main__':
 
     h = np.load('./arrays/h_{}x_{}.npy'.format(C.R, C.Q_TOTAL))
     h_comb = h[:, :-1].reshape(h.shape[0], C.PATCH_SIZE, C.PATCH_SIZE, C.PATCH_SIZE)
+    # h_comb_flip = np.zeros((h.shape[0], 4, C.PATCH_SIZE, C.PATCH_SIZE, C.PATCH_SIZE))
+    # h_comb_flip[:, 0] = h_comb
+    # h_comb_flip[:, 1] = np.flip(h_comb, axis=2)
+    # h_comb_flip[:, 2] = np.flip(h_comb, axis=1)
+    # h_comb_flip[:, 3] = np.flip(h_comb, axis=0)
+
     h_bias = h[:, -1]
-    kmeans = load_kmeans_model()
+    kmeans, std = load_kmeans_model()
 
     filestart = time.time()
 
@@ -122,7 +133,7 @@ if __name__ == '__main__':
 
         filestart = time.time()
 
-        im_result = make_image(im_LR, im_GX, im_GY, im_GZ, G_WEIGHT, kmeans, h)
+        im_result = make_image(im_LR, im_GX, im_GY, im_GZ, G_WEIGHT, kmeans, std, h)
 
         print(time.time() - filestart)
 

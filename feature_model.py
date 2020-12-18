@@ -13,7 +13,7 @@ from preprocessing import get_array_data
 import filter_constant as C
 
 @njit
-def get_lamda_u(l1, l2, l3):
+def get_invarient_set(l1, l2, l3):
     l1 = math.sqrt(l1)
     l2 = math.sqrt(l2)
     l3 = math.sqrt(l3)
@@ -24,7 +24,7 @@ def get_lamda_u(l1, l2, l3):
     return trace, fa, mode
 
 @njit
-def get_features(patchX, patchY, patchZ, weight):
+def get_features(patchX, patchY, patchZ, weight, std):
     G = np.vstack((patchX.ravel(), patchY.ravel(), patchZ.ravel())).T
     x = G.T @ (weight * G)
     w, v = np.linalg.eig(x)
@@ -39,11 +39,13 @@ def get_features(patchX, patchY, patchZ, weight):
     sign = np.sign(v1)
     v1 = np.abs(v1)
 
-    trace, fa, mode = get_lamda_u(l1, l2, l3)
+    invarient_set = get_invarient_set(l1, l2, l3)
 
-    # return v1[0], v1[1], v1[2], math.log(trace), fa, mode, index1, sign
-    # return v1[0], v1[1], v1[2], trace*2, fa, mode, index1, sign
-    return v1[0], v1[1], v1[2], math.sqrt(trace/0.053), math.sqrt(fa/0.071), math.sqrt((mode+1)/0.362), index1, sign
+    trace = math.sqrt(invarient_set[0] / std[0])
+    fa = math.sqrt(invarient_set[1] / std[1])
+    mode = math.sqrt((invarient_set[2]+1.0001) / std[2])
+
+    return v1[0], v1[1], v1[2], trace, fa, mode, index1, sign
 
 
 @njit
@@ -59,7 +61,7 @@ def make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, w, point_space, MA
 
                 patchX, patchY, patchZ = get_gxyz(im_GX, im_GY, im_GZ, i1, j1, k1)
 
-                point_space[patchNumber] = np.array(get_features(patchX, patchY, patchZ, w)[:-2])
+                point_space[patchNumber] = np.array(get_features(patchX, patchY, patchZ, w, np.array([1, 1, 1]))[:-2])
                 patchNumber += 1
 
     return point_space, patchNumber
@@ -104,20 +106,26 @@ def make_kmeans_model(file_list):
         if patchNumber > MAX_POINTS / 2:
             break
 
-    quantization = point_space[0:patchNumber, :]
+    point_space = point_space[0:patchNumber, :]
+    point_square = point_space[:, 3:] * point_space[:, 3:]
+    std = np.std(point_square, axis=0)
+    print(std)
+    point_space[:, 3:] = np.sqrt(point_square * (1/std)[None, :])
+    print(point_space[0, :])
+    print(point_space[1, :])
 
     start = time.time()
     print('start clustering')
-    kmeans = k_means_modeling(quantization)
+    kmeans = k_means_modeling(point_space)
     print(time.time() - start)
 
     with open('./arrays/space_{}x_{}.km'.format(C.R, C.Q_TOTAL), 'wb') as p:
-        pickle.dump(kmeans, p)
+        pickle.dump([kmeans, std], p)
 
-    return kmeans
+    return kmeans, std
 
 
 def load_kmeans_model():
     with open('./arrays/space_{}x_{}.km'.format(C.R, C.Q_TOTAL), "rb") as p:
-        kmeans = pickle.load(p)
-    return kmeans
+        kmeans, std = pickle.load(p)
+    return kmeans, std
