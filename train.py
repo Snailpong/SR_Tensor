@@ -105,8 +105,8 @@ if __name__ == '__main__':
 
     G_WEIGHT = get_normalized_gaussian()
 
-    # kmeans, std = make_kmeans_model(file_list)
-    kmeans, std = load_kmeans_model()
+    kmeans, std = make_kmeans_model(file_list)
+    # kmeans, std = load_kmeans_model()
 
     start = time.time()
 

@@ -26,7 +26,7 @@ def make_image(im_LR, im_GX, im_GY, im_GZ, w, kmeans, std, h):
     for i1 in range(C.PATCH_HALF, H - C.PATCH_HALF):
         print('\r{} / {}    {} s'.format(i1, H - C.PATCH_HALF, ((time.time() - timer) * 100 // 10) / 10), end='')
         timer = time.time()
-        fS, iS = get_feature_yz(i1, result_image, im_LR, im_GX, im_GY, im_GZ, w)
+        fS, iS = get_feature_yz(i1, result_image, im_LR, im_GX, im_GY, im_GZ, w, std)
 
         if len(fS) == 0:
             continue
@@ -147,7 +147,7 @@ if __name__ == '__main__':
         print(peak_signal_noise_ratio(im_HR, im_LR), peak_signal_noise_ratio(im_HR, im_result))
         print(structural_similarity(im_HR, im_LR), structural_similarity(im_HR, im_result))
 
-        if file_idx == 0:
-            break
+        # if file_idx == 0:
+        #     break
 
     print("Test is off")

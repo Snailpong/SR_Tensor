@@ -74,10 +74,6 @@ def init_buckets(Q_TOTAL):
 
 
 def k_means_modeling(quantization):
-
-    # with open('./arrays/qua', 'rb') as p:
-    #     quantization = pickle.load(p)
-
     kmeans_angle = KMeans_Vector(n_clusters=C.Q_ANGLE, verbose=True, max_iter=30, n_init=1)
     kmeans_angle.fit(quantization[:, :3])
 
@@ -109,10 +105,7 @@ def make_kmeans_model(file_list):
     point_space = point_space[0:patchNumber, :]
     point_square = point_space[:, 3:] * point_space[:, 3:]
     std = np.std(point_square, axis=0)
-    print(std)
     point_space[:, 3:] = np.sqrt(point_square * (1/std)[None, :])
-    print(point_space[0, :])
-    print(point_space[1, :])
 
     start = time.time()
     print('start clustering')
