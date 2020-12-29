@@ -111,11 +111,6 @@ if __name__ == '__main__':
 
     h = np.load('./arrays/h_{}x_{}.npy'.format(C.R, C.Q_TOTAL))
     h_comb = h[:, :-1].reshape(h.shape[0], C.PATCH_SIZE, C.PATCH_SIZE, C.PATCH_SIZE)
-    # h_comb_flip = np.zeros((h.shape[0], 4, C.PATCH_SIZE, C.PATCH_SIZE, C.PATCH_SIZE))
-    # h_comb_flip[:, 0] = h_comb
-    # h_comb_flip[:, 1] = np.flip(h_comb, axis=2)
-    # h_comb_flip[:, 2] = np.flip(h_comb, axis=1)
-    # h_comb_flip[:, 3] = np.flip(h_comb, axis=0)
 
     h_bias = h[:, -1]
     kmeans, std = load_kmeans_model()
