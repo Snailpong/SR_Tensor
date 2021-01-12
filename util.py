@@ -13,11 +13,10 @@ import filter_constant as C
 def make_dataset(dir):
     images = []
     assert os.path.isdir(dir), '%s is not a valid directory' % dir
-    for root, _, fnames in sorted(os.walk(dir)):
-        for fname in fnames:
-            if fname.endswith('.nii.gz'):
-                path = os.path.join(root, fname)
-                images.append(path)
+    for fname in sorted(os.listdir(dir)):
+        if fname.endswith('.nii.gz'):
+            path = os.path.join(dir, fname)
+            images.append(path)
     return images
 
 

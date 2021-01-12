@@ -17,7 +17,7 @@ from preprocessing import *
 from util import *
 
 
-def train_qv(im_LR, im_HR, w, kmeans, std, Q, V, count):
+def train_qv(im_LR, im_HR, w, kmeans, Q, V, count):
     im_GX, im_GY, im_GZ = np.gradient(im_LR)
 
     point_list = sample_points(im_HR.shape)
@@ -35,7 +35,7 @@ def train_qv(im_LR, im_HR, w, kmeans, std, Q, V, count):
                 continue
 
             patchX, patchY, patchZ = get_gxyz(im_GX, im_GY, im_GZ, i1, j1, k1)
-            features = get_features(patchX, patchY, patchZ, w, std)
+            features = get_features(patchX, patchY, patchZ, w)
             fS.append(features[:-2])
             iS.append(features[-2:])
 
@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
     G_WEIGHT = get_normalized_gaussian()
 
-    kmeans, std = make_kmeans_model(file_list)
+    kmeans = make_kmeans_model(file_list)
     # kmeans, std = load_kmeans_model()
 
     start = time.time()
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         file_name = file.split('\\')[-1].split('.')[0]
         filestart = time.time()
 
-        if file_idx >= 100:
+        if file_idx >= 30:
             break
 
         if file in finished_files:
@@ -123,7 +123,7 @@ if __name__ == '__main__':
         print('\rProcessing ' + str(file_idx + 1) + '/' + str(len(file_list)) + ' image (' + file_name + ')')
 
         im_HR, im_LR = get_array_data(file, training=True)
-        Q, V, count = train_qv(im_LR, im_HR, G_WEIGHT, kmeans, std, Q, V, count)
+        Q, V, count = train_qv(im_LR, im_HR, G_WEIGHT, kmeans, Q, V, count)
         
         print(' ' * 5, 'last', '%.1f' % ((time.time() - filestart) / 60), 'min', end='', flush=True)
 

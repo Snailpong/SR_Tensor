@@ -24,7 +24,7 @@ def get_invarient_set(l1, l2, l3):
     return trace, fa, mode
 
 @njit
-def get_features(patchX, patchY, patchZ, weight, std):
+def get_features(patchX, patchY, patchZ, weight):
     G = np.vstack((patchX.ravel(), patchY.ravel(), patchZ.ravel())).T
     x = G.T @ (weight * G)
     w, v = np.linalg.eig(x)
@@ -41,9 +41,9 @@ def get_features(patchX, patchY, patchZ, weight, std):
 
     invarient_set = get_invarient_set(l1, l2, l3)
 
-    trace = math.sqrt(invarient_set[0] / std[0])
-    fa = math.sqrt(invarient_set[1] / std[1])
-    mode = math.sqrt((invarient_set[2]+1.0001) / std[2])
+    trace = math.sqrt(invarient_set[0])
+    fa = math.sqrt(invarient_set[1])
+    mode = math.sqrt(invarient_set[2]+1.0001)
 
     return v1[0], v1[1], v1[2], trace, fa, mode, index1, sign
 
@@ -61,7 +61,7 @@ def make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, w, point_space, MA
 
                 patchX, patchY, patchZ = get_gxyz(im_GX, im_GY, im_GZ, i1, j1, k1)
 
-                point_space[patchNumber] = np.array(get_features(patchX, patchY, patchZ, w, np.array([1, 1, 1]))[:-2])
+                point_space[patchNumber] = np.array(get_features(patchX, patchY, patchZ, w)[:-2])
                 patchNumber += 1
 
     return point_space, patchNumber
@@ -103,9 +103,9 @@ def make_kmeans_model(file_list):
             break
 
     point_space = point_space[0:patchNumber, :]
-    point_square = point_space[:, 3:] * point_space[:, 3:]
-    std = np.std(point_square, axis=0)
-    point_space[:, 3:] = np.sqrt(point_square * (1/std)[None, :])
+    # point_square = point_space[:, 3:] * point_space[:, 3:]
+    # std = np.std(point_square, axis=0)
+    # point_space[:, 3:] = np.sqrt(point_square * (1/std)[None, :])
 
     start = time.time()
     print('start clustering')
@@ -113,12 +113,12 @@ def make_kmeans_model(file_list):
     print(time.time() - start)
 
     with open('./arrays/space_{}x_{}.km'.format(C.R, C.Q_TOTAL), 'wb') as p:
-        pickle.dump([kmeans, std], p)
+        pickle.dump(kmeans, p)
 
-    return kmeans, std
+    return kmeans
 
 
 def load_kmeans_model():
     with open('./arrays/space_{}x_{}.km'.format(C.R, C.Q_TOTAL), "rb") as p:
-        kmeans, std = pickle.load(p)
-    return kmeans, std
+        kmeans = pickle.load(p)
+    return kmeans

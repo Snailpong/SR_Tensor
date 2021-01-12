@@ -18,7 +18,7 @@ from preprocessing import *
 from util import *
 
 
-def make_image(im_LR, im_GX, im_GY, im_GZ, w, kmeans, std, h):
+def make_image(im_LR, im_GX, im_GY, im_GZ, w, kmeans, h):
     H = im_LR.shape[0]
     result_image = im_LR.copy()
 
@@ -26,7 +26,7 @@ def make_image(im_LR, im_GX, im_GY, im_GZ, w, kmeans, std, h):
     for i1 in range(C.PATCH_HALF, H - C.PATCH_HALF):
         print('\r{} / {}    {} s'.format(i1, H - C.PATCH_HALF, ((time.time() - timer) * 100 // 10) / 10), end='')
         timer = time.time()
-        fS, iS = get_feature_yz(i1, result_image, im_LR, im_GX, im_GY, im_GZ, w, std)
+        fS, iS = get_feature_yz(i1, result_image, im_LR, im_GX, im_GY, im_GZ, w)
 
         if len(fS) == 0:
             continue
@@ -43,7 +43,7 @@ def make_image(im_LR, im_GX, im_GY, im_GZ, w, kmeans, std, h):
     return result_image
 
 
-def get_feature_yz(i1, result_image, im_LR, im_GX, im_GY, im_GZ, w, std):
+def get_feature_yz(i1, result_image, im_LR, im_GX, im_GY, im_GZ, w):
     H, W, D = im_LR.shape
     fS = []
     iS = []
@@ -55,7 +55,7 @@ def get_feature_yz(i1, result_image, im_LR, im_GX, im_GY, im_GZ, w, std):
 
             patchX, patchY, patchZ = get_gxyz(im_GX, im_GY, im_GZ, i1, j1, k1)
 
-            features = get_features(patchX, patchY, patchZ, w, std)
+            features = get_features(patchX, patchY, patchZ, w)
             fS.append(features[:-2])
             iS.append(features[-2:])
 
@@ -118,7 +118,7 @@ if __name__ == '__main__':
     # h_comb_flip[:, 3] = np.flip(h_comb, axis=0)
 
     h_bias = h[:, -1]
-    kmeans, std = load_kmeans_model()
+    kmeans = load_kmeans_model()
 
     filestart = time.time()
 
@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
         filestart = time.time()
 
-        im_result = make_image(im_LR, im_GX, im_GY, im_GZ, G_WEIGHT, kmeans, std, h)
+        im_result = make_image(im_LR, im_GX, im_GY, im_GZ, G_WEIGHT, kmeans, h)
 
         print(time.time() - filestart)
 
