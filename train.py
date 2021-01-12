@@ -114,7 +114,7 @@ if __name__ == '__main__':
         file_name = file.split('\\')[-1].split('.')[0]
         filestart = time.time()
 
-        if file_idx >= 100:
+        if file_idx >= 30:
             break
 
         if file in finished_files:
