@@ -101,7 +101,7 @@ def make_kmeans_model(file_list):
         point_space, patchNumber = make_point_space(im_LR, im_GX, im_GY, im_GZ, patchNumber, G_WEIGHT, point_space, MAX_POINTS)
         if patchNumber > MAX_POINTS / 2:
             break
-
+    print(patchNumber)
     point_space = point_space[0:patchNumber, :]
     point_square = point_space[:, 3:] * point_space[:, 3:]
     std = np.std(point_square, axis=0)

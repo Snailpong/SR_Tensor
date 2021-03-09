@@ -1,4 +1,5 @@
 __pycache__/
+py_nope/
 arrays/
 .idea/
 result/
@@ -9,6 +10,7 @@ flip.py
 geometry_distribution.py
 show_feature.py
 show_filter.py
+speed_compare.py
 show_centroid.py
 quality_matrics.py
 작업목록.txt

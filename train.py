@@ -131,3 +131,5 @@ if __name__ == '__main__':
         
     print(count)
     compute_h(Q, V)
+
+    print('Train finished')

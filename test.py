@@ -81,15 +81,10 @@ def make_hr_yz(i1, result_image, im_LR, jS, h, iS):
                 iS[cnt][1][2] *= -1
             if iS[cnt][1][1] > 0 and iS[cnt][1][2] < 0:
                 patch = np.flip(patch, axis=2)
-                # flip_num = 1
             elif iS[cnt][1][1] < 0 and iS[cnt][1][2] > 0:
                 patch = np.flip(patch, axis=1)
-                # flip_num = 2
             elif iS[cnt][1][1] < 0 and iS[cnt][1][2] < 0:
                 patch = np.flip(patch, axis=0)
-                # flip_num = 3
-            else:
-                flip_num = 0
 
             result_image[i1, j1, k1] = (patch * h_comb[jS[cnt]]).sum() + h_bias[jS[cnt]]
             cnt += 1
@@ -111,13 +106,8 @@ if __name__ == '__main__':
 
     h = np.load('./arrays/h_{}x_{}.npy'.format(C.R, C.Q_TOTAL))
     h_comb = h[:, :-1].reshape(h.shape[0], C.PATCH_SIZE, C.PATCH_SIZE, C.PATCH_SIZE)
-    # h_comb_flip = np.zeros((h.shape[0], 4, C.PATCH_SIZE, C.PATCH_SIZE, C.PATCH_SIZE))
-    # h_comb_flip[:, 0] = h_comb
-    # h_comb_flip[:, 1] = np.flip(h_comb, axis=2)
-    # h_comb_flip[:, 2] = np.flip(h_comb, axis=1)
-    # h_comb_flip[:, 3] = np.flip(h_comb, axis=0)
-
     h_bias = h[:, -1]
+
     kmeans, std = load_kmeans_model()
 
     filestart = time.time()
@@ -128,7 +118,7 @@ if __name__ == '__main__':
         print('' * 60, end='')
         print('\rProcessing ' + str(file_idx + 1) + '/' + str(len(file_list)) + ' image (' + file_name + ')' + str(time.time() - filestart))
 
-        im_HR, im_LR, raw_shape, image_max, slice_area = get_array_data(file, training=False)
+        im_HR, im_LR, raw_shape, image_max, slice_area, header = get_array_data(file, training=False)
         im_GX, im_GY, im_GZ = np.gradient(im_LR)
 
         filestart = time.time()
@@ -140,7 +130,8 @@ if __name__ == '__main__':
         output_img = np.zeros(raw_shape)
         output_img[slice_area] = im_result
         output_img = output_img * image_max
-        ni_img = nib.Nifti1Image(output_img, np.eye(4))
+
+        ni_img = nib.Nifti1Image(output_img, None, header=header)
         nib.save(ni_img, '{}/{}_result.nii.gz'.format(result_dir, file_name))
 
         print()
@@ -150,4 +141,4 @@ if __name__ == '__main__':
         # if file_idx == 0:
         #     break
 
-    print("Test is off")
+    print('Test Finished')

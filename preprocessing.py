@@ -8,7 +8,10 @@ import filter_constant as C
 
 
 def get_array_data(file, training):
-    raw_image = np.array(nib.load(file).get_fdata(), dtype=np.float32)
+    raw_image = nib.load(file).get_fdata()
+    raw_array = np.array(raw_array, dtype=np.float32)
+    raw_header = raw_image.header.copy()
+
     clipped_image = clip_image(raw_image)
     im = mod_crop(clipped_image, C.R)
     slice_area = crop_slice(im, C.PATCH_HALF, C.R)
@@ -20,7 +23,7 @@ def get_array_data(file, training):
     if training:
         return im_HR, im_LR
     else:
-        return im_HR, im_LR, raw_image.shape, im.max(), slice_area
+        return im_HR, im_LR, raw_image.shape, im.max(), slice_area, raw_header
 
 
 def mod_crop(im, modulo):
