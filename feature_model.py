@@ -19,7 +19,7 @@ def get_invarient_set(l1, l2, l3):
     l3 = math.sqrt(l3)
     trace = l1 + l2 + l3
     mean_la = trace / 3
-    fa = ((l1 - mean_la)**2 + (l2 - mean_la)**2 + (l3 - mean_la)**2)/ (l1**2 + l2**2 + l3**2)
+    fa = math.sqrt(((l1 - mean_la)**2 + (l2 - mean_la)**2 + (l3 - mean_la)**2) / (l1**2 + l2**2 + l3**2) / 2.)
     mode = (-l1-l2+2*l3)*(2*l1-l2-l3)*(-l1+2*l2-l3)/2/pow(l1**2+l2**2+l3**2-l1*l2-l1*l3-l2*l3, 1.5)
     return trace, fa, mode
 

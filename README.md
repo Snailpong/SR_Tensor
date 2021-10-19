@@ -2,13 +2,9 @@
 An implementation of 3D brain MRI super-resolution method by image gradient-tensor distance based patch clustering
 
 ### Conference Abstract
- - 3D Brain MRI Super-Resolution with Image Gradient Tensor Feature Clustering [[Poster]](https://anyscreeninc.com/PF/OHBM/2021/OHBM-Educational-Courses/pdf_poster_files/Seongsu_Park60785c7f217ee/Seongsu_Park.pdf)
+ - 3D Brain MRI Super-Resolution with Image Gradient Tensor Feature Clustering [[Poster]](https://github.com/Snailpong/SR_Tensor/files/7373293/ohbm.pdf)
   
  - Organization for Human Brain Mapping Annual Meeting, 2021
-
-
-### Journal Paper
- - Will be updated..
 
 
 ## Requirments
