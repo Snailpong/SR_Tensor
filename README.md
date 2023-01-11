@@ -1,6 +1,14 @@
 # SR_Tensor
 An implementation of 3D brain MRI super-resolution method by image gradient-tensor distance based patch clustering
 
+
+### Paper
+ - Super-Resolution of 3D Brain MRI With Filter Learning Using Tensor Feature Clustering [[Paper]](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9672096)
+
+ - IEEE Access, 2022
+ 
+ 
+ 
 ### Conference Abstract
  - 3D Brain MRI Super-Resolution with Image Gradient Tensor Feature Clustering [[Poster]](https://github.com/Snailpong/SR_Tensor/files/7373293/ohbm.pdf)
   
